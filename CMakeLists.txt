@@ -1,0 +1,80 @@
+project(BSPOT)
+cmake_minimum_required(VERSION 3.12)
+
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
+# define EIGEN_DONT_PARALLELIZE
+add_definitions(-DEIGEN_DONT_PARALLELIZE)
+
+find_package (Eigen3 3.4 REQUIRED NO_MODULE)
+#find_package(OpenMP)
+
+include(CPM)
+include(openmp)
+#include(eigen)
+include(polyscope)
+include(geometry-central)
+include(spdlog)
+#include(libigl)
+include(spectra)
+#add_library(bspot MODULE bindings.cpp)
+#target_link_libraries(bspot PRIVATE pybind11::module)
+#set_target_properties(bspot PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}" SUFFIX "${PYTHON_MODULE_EXTENSION}")
+
+#add_subdirectory(deps/bvh)
+
+file(GLOB COMMON
+    "common/*"
+)
+
+file(GLOB SOURCE
+    "src/*"
+)
+
+file(GLOB MESH
+        "src_meshes/*"
+)
+
+file(GLOB IMAGE
+        "src_images/*.hpp"
+        "src_images/*.h"
+        "src_images/*.cpp"
+)
+
+add_executable(bijections apps/bijections.cpp ${SOURCE})
+target_link_libraries(bijections polyscope spdlog Eigen3::Eigen OpenMP::OpenMP_CXX)
+
+add_executable(manifold_sampling apps/manifold_sampling.cpp ${SOURCE} ${MESH})
+target_link_libraries(manifold_sampling polyscope spdlog geometry-central Eigen3::Eigen OpenMP::OpenMP_CXX Spectra)
+
+add_executable(persistance_diagrams_matching apps/persistance_diagrams_matching.cpp ${SOURCE})
+target_link_libraries(persistance_diagrams_matching polyscope spdlog  Eigen3::Eigen OpenMP::OpenMP_CXX)
+
+add_executable(barycenters apps/barycenters.cpp ${SOURCE} ${IMAGE})
+target_link_libraries(barycenters polyscope spdlog Eigen3::Eigen OpenMP::OpenMP_CXX)
+
+add_executable(general_coupling apps/general_coupling.cpp ${SOURCE} ${MESH})
+target_link_libraries(general_coupling polyscope spdlog Eigen3::Eigen geometry-central OpenMP::OpenMP_CXX)
+
+add_executable(color_transfer apps/color_transfer.cpp ${SOURCE} ${IMAGE})
+target_link_libraries(color_transfer polyscope spdlog Eigen3::Eigen OpenMP::OpenMP_CXX)
+
+add_executable(stippling apps/stippling.cpp ${SOURCE} ${IMAGE})
+target_link_libraries(stippling polyscope spdlog Eigen3::Eigen  OpenMP::OpenMP_CXX)
+
+add_executable(partial_transport apps/partial_transport.cpp ${SOURCE})
+target_link_libraries(partial_transport polyscope spdlog  Eigen3::Eigen OpenMP::OpenMP_CXX)
+
+add_executable(scale_rigid_registration apps/scale_rigid_registration.cpp ${SOURCE})
+target_link_libraries(scale_rigid_registration polyscope spdlog Eigen3::Eigen OpenMP::OpenMP_CXX)
+
+add_executable(advection_splatting apps/advection_splatting.cpp ${SOURCE} ${IMAGE})
+target_link_libraries(advection_splatting polyscope spdlog Eigen3::Eigen OpenMP::OpenMP_CXX)
+
+add_executable(multi_marginals apps/multi_marginals.cpp ${SOURCE} ${IMAGE})
+target_link_libraries(multi_marginals polyscope spdlog Eigen3::Eigen OpenMP::OpenMP_CXX)
+
