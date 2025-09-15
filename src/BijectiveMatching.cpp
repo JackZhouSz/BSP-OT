@@ -219,6 +219,8 @@ BijectiveMatching BSPOT::MergePlans(const std::vector<BijectiveMatching> &plans,
                 CCs.push_back(CC);
                 avg_cc_size += CC.size();
             }
+        } else {
+            CCs.push_back(rangeVec(N));
         }
         // profiler.tick("cycle");
         // for (auto a : range(N))
@@ -335,6 +337,8 @@ BijectiveMatching BSPOT::MergePlansNoPar(const std::vector<BijectiveMatching> &p
                 c++;
                 CCs.push_back(CC);
             }
+        } else {
+            CCs.push_back(rangeVec(N));
         }
         for (int i = 0; i < CCs.size(); ++i) {
             {
