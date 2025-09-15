@@ -30,7 +30,7 @@ All dependencies except Eigen3 are also included via CMake include scripts (see 
 
 1. **Go in code folder**
    ```bash
-   cd BSPOT_code
+   cd BSP-OT
    ```
 
 2. **Create a build directory**
