@@ -22,7 +22,6 @@ The following libraries are required and are automatically handled by the CMake 
 - [geometry-central](https://github.com/nmwsharp/geometry-central)
 - [spdlog](https://github.com/gabime/spdlog)
 - [Spectra](https://github.com/yixuan/spectra)
-- (optionally, but commented out in CMake: `libigl`, `pybind11`)
 
 All dependencies except Eigen3 are also included via CMake include scripts (see the `cmake/` directory).
 
