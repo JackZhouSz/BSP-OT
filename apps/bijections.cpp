@@ -20,7 +20,7 @@
 int N = 1000;
 int nb_plans = 16;
 
-constexpr int static_dim = 2;
+constexpr int static_dim = 3;
 int dim = static_dim;
 
 using namespace BSPOT;
@@ -67,6 +67,7 @@ ints rankPlans(const std::vector<BijectiveMatching>& plans) {
 }
 
 
+// optimized version of the merging, you can use Merge for simplicity
 BijectiveMatching MergePlansNoPar(const std::vector<BijectiveMatching> &plans, BijectiveMatching T,bool cycle) {
     int s = 0;
     auto I = true ? rankPlans(plans) : rangeVec(plans.size());
@@ -175,22 +176,9 @@ void compute() {
 #pragma omp parallel for
     for (auto& plan : plans) {
         plan = BSP.computeGaussianMatching();
-//        plan = BSP.computeOrthogonalMatching(sampleUnitGaussianMat(dim,dim).fullPivHouseholderQr().matrixQ(),false);
-//        plan = BSP.computeOrthogonalMatching(Q,false);
-//        plan = BSP.computeMatching();
     }
     spdlog::info("compute time {}",TimeFrom(start));
-    T = MergePlans(plans,cost,BijectiveMatching(),(N < 5e5));
-//    Vec costs(nb_plans);
-//    for (auto i : range(nb_plans)) {
-//        T = Merge(T,plans[i],cost);
-//        costs[i] = eval(A,B,T);
-//    }
-//    std::ofstream outfile("/tmp/costs.data");
-//    outfile << costs;
-    spdlog::info("merge time {} cost {}",TimeFrom(start),eval(A,B,T));
     start = Time::now();
-    // T = MergePlans(plans,cost,BijectiveMatching(),(N < 5e5));
     T = MergePlansNoPar(plans,BijectiveMatching(),(N < 5e5));
     scalar w = eval(A,B,T);
     spdlog::info("merge time {} cost {}",TimeFrom(start),w);
@@ -226,7 +214,7 @@ int main(int argc,char** argv) {
     CLI::App app("BSPOT bijection") ;
 
     app.add_option("--sizes", N, "Number of samples in each cloud (default 1000)");
-    app.add_option("--iter", nb_plans, "Number of iterations of refinement (default 100)");
+    app.add_option("--nb_trees", nb_plans, "Number of iterations of refinement (default 100)");
 
     std::string mu_src;
     std::string nu_src;

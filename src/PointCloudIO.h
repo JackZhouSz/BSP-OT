@@ -13,7 +13,7 @@ inline Points<D> ReadPointCloud(std::filesystem::path path) {
 
     if (!infile.is_open()) {
         std::cerr << "Error opening file: " << path.filename() << std::endl;
-        return {};
+        throw std::runtime_error("File not found");
     }
 
     std::vector<double> data; // Store all values in a single contiguous array
@@ -36,9 +36,7 @@ inline Points<D> ReadPointCloud(std::filesystem::path path) {
         if (dim == -1)
             dim = current_cols;
         if (current_cols != dim) {
-            std::cerr << "Error: Wrong dimension when loading point cloud.\n";
-            std::cerr << line << std::endl;
-            return {};
+            throw std::runtime_error("Inconsistent dimensions in point cloud file or static dim != point cloud dim");
         }
         ++rows;
     }
