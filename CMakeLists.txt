@@ -11,21 +11,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_definitions(-DEIGEN_DONT_PARALLELIZE)
 
 find_package (Eigen3 3.4 REQUIRED NO_MODULE)
-#find_package(OpenMP)
 
 include(CPM)
 include(openmp)
-#include(eigen)
 include(polyscope)
 include(geometry-central)
 include(spdlog)
-#include(libigl)
 include(spectra)
-#add_library(bspot MODULE bindings.cpp)
-#target_link_libraries(bspot PRIVATE pybind11::module)
-#set_target_properties(bspot PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}" SUFFIX "${PYTHON_MODULE_EXTENSION}")
-
-#add_subdirectory(deps/bvh)
 
 file(GLOB COMMON
     "common/*"
