@@ -39,136 +39,6 @@ inline scalar cost(int i,int j) {
 
 BijectiveMatching T,Tex;
 
-Vec evalMappings(const BijectiveMatching& T) {
-    // compute square distance between A and B(Eigen::all,T)
-    Vec costs(T.size());
-    for (auto i : range(T.size()))
-        costs[i] = (A.col(i) - B.col(T[i])).squaredNorm();
-    // Pts diff = A - B(Eigen::all,T);
-    // Vec costs = diff.colwise().squaredNorm().transpose();
-    return costs;
-}
-
-ints rankPlans(const std::vector<BijectiveMatching>& plans) {
-    auto start = Time::now();
-    std::vector<std::pair<scalar,int>> scores(plans.size());
-    for (auto i : range(plans.size())) {
-        scores[i].first = evalMappings(T).sum();
-        scores[i].second = i;
-    }
-    std::sort(scores.begin(),scores.end(),[](const auto& a,const auto& b) {
-        return a.first < b.first;
-    });
-    // spdlog::info("sort timing {}",TimeFrom(start));
-    ints rslt(scores.size());
-    for (auto i : range(scores.size()))
-        rslt[i] = scores[i].second;
-    return rslt;
-}
-
-
-// optimized version of the merging, you can use Merge for simplicity
-BijectiveMatching MergePlansNoPar(const std::vector<BijectiveMatching> &plans, BijectiveMatching T,bool cycle) {
-    int s = 0;
-    auto I = true ? rankPlans(plans) : rangeVec(plans.size());
-    if (T.size() == 0) {
-        T = plans[I[0]];
-        s = 1;
-    }
-    int N = plans[0].size();
-
-    auto C = evalMappings(T);
-
-    ints rslt = T;
-    ints rsltI = T.inverseMatching();
-
-    ints sig(N);
-
-    StopWatch profiler;
-    for (auto k : range(s,plans.size())) {
-        ints Tp = plans[I[k]];
-        ints Tpi = plans[I[k]].inverseMatching();
-        auto Cp = evalMappings(Tp);
-
-        for (auto i : range(N))
-            sig[i] = Tpi[rslt[i]];
-
-        // profiler.start();
-
-        std::vector<ints> CCs;
-
-        if (cycle) {
-            ints visited(N,-1);
-            int c = 0;
-            for (auto i : range(N)) {
-                if (visited[i] != -1)
-                    continue;
-                int j = i;
-                int i0 = i;
-                if (sig[j] == i)
-                    continue;
-
-                ints CC;
-                scalar costT = 0;
-                scalar costTP = 0;
-
-                while (visited[j] == -1) {
-                    CC.push_back(j);
-                    costT  += C[j];
-                    costTP += Cp[j];
-                    visited[j] = c;
-                    j = sig[j];
-                }
-
-                if (costTP < costT) {
-                    j = i0;
-                    do {
-                        std::swap(Tp[j],rslt[j]);
-                        std::swap(C[j],Cp[j]);
-                        j = sig[j];
-                    } while (j != i0);
-                    j = i0;
-                    do {
-                        rsltI[rslt[j]] = j;
-                        j = sig[j];
-                    } while (j != i0);
-                }
-
-                c++;
-                CCs.push_back(CC);
-            }
-        }
-        for (int i = 0; i < CCs.size(); ++i) {
-            {
-                for (auto a : CCs[i]){
-                    // swapIfUpgradeK(rslt,rsltI,Tp,a,3,cost);
-                    int b = rslt[a];
-                    int bp = Tp[a];
-                    int ap  = rsltI[bp];
-                    if (a == ap || b == bp)
-                        continue;
-                    scalar old_cost = C[a] + C[ap];
-                    scalar cabp = Cp[a];
-                    if (cabp > old_cost)
-                        continue;
-                    scalar capb = cost(ap,b);
-                    if (cabp + capb < old_cost) {
-                        rslt[a] = bp;
-                        rslt[ap] = b;
-                        rsltI[bp] = a;
-                        rsltI[b] = ap;
-                        C[a] = cabp;
-                        C[ap] = capb;
-                    }
-                }
-            }
-        }
-    }
-    return rslt;
-}
-
-scalar noise = 0e-3;
-
 void compute() {
     auto plans = std::vector<BijectiveMatching>(nb_plans);
     auto start = Time::now();
@@ -179,7 +49,7 @@ void compute() {
     }
     spdlog::info("compute time {}",TimeFrom(start));
     start = Time::now();
-    T = MergePlansNoPar(plans,BijectiveMatching(),(N < 5e5));
+    T = MergePlansNoPar(plans,cost,BijectiveMatching(),(N < 5e5));
     scalar w = eval(A,B,T);
     spdlog::info("merge time {} cost {}",TimeFrom(start),w);
 }
@@ -208,7 +78,7 @@ void myCallBack() {
 int main(int argc,char** argv) {
     srand(time(NULL));
     if (std::is_same<scalar,double>::value) {
-        spdlog::error("for the bijective matching, compiling using float may lead to a significant speed-up without affecting its quality \n you can change the type in 'common/types.h' ");
+        spdlog::warn("for the bijective matching, compiling using float may lead to a significant speed-up without affecting its quality \n you can change the type in 'common/types.h' ");
     }
 
     CLI::App app("BSPOT bijection") ;
@@ -226,8 +96,6 @@ int main(int argc,char** argv) {
 
     std::string out_src;
     app.add_option("--output_file", out_src, "output transport plan");
-
-    app.add_option("--noise", noise, "noise perturbation");
 
     if (static_dim == -1)
         app.add_option("--dim",dim,"dimension of the clouds, required if compiled with static_dim == -1")->required(true);
