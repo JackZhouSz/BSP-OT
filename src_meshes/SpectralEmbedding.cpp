@@ -1,6 +1,8 @@
 #include "SpectralEmbedding.h"
 #include <spdlog/spdlog.h>
 
+using namespace BSPOT;
+
 
 std::pair<Mat, Vec> BSPOT::computeEigenModesSPD(const smat &A, const smat &M, int nb) {
     using namespace Spectra;
