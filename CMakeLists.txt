@@ -7,16 +7,14 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
-# define EIGEN_DONT_PARALLELIZE
-add_definitions(-DEIGEN_DONT_PARALLELIZE)
-
-find_package (Eigen3 3.4 REQUIRED NO_MODULE)
-
 include(CPM)
 include(openmp)
 include(polyscope)
 include(geometry-central)
 include(spdlog)
+# define EIGEN_DONT_PARALLELIZE
+add_definitions(-DEIGEN_DONT_PARALLELIZE)
+include(eigen)
 include(spectra)
 
 file(GLOB COMMON
