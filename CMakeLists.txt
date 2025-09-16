@@ -48,7 +48,7 @@ add_executable(barycenters apps/barycenters.cpp ${SOURCE} ${IMAGE})
 target_link_libraries(barycenters polyscope spdlog Eigen3::Eigen OpenMP::OpenMP_CXX)
 
 add_executable(general_coupling apps/general_coupling.cpp ${SOURCE} ${MESH})
-target_link_libraries(general_coupling polyscope spdlog Eigen3::Eigen geometry-central OpenMP::OpenMP_CXX)
+target_link_libraries(general_coupling polyscope spdlog Eigen3::Eigen geometry-central OpenMP::OpenMP_CXX Spectra)
 
 add_executable(color_transfer apps/color_transfer.cpp ${SOURCE} ${IMAGE})
 target_link_libraries(color_transfer polyscope spdlog Eigen3::Eigen OpenMP::OpenMP_CXX)
@@ -66,5 +66,5 @@ add_executable(advection_splatting apps/advection_splatting.cpp ${SOURCE} ${IMAG
 target_link_libraries(advection_splatting polyscope spdlog Eigen3::Eigen OpenMP::OpenMP_CXX)
 
 add_executable(multi_marginals apps/multi_marginals.cpp ${SOURCE} ${IMAGE})
-target_link_libraries(multi_marginals polyscope spdlog Eigen3::Eigen OpenMP::OpenMP_CXX)
+target_link_libraries(multi_marginals polyscope spdlog Eigen3::Eigen OpenMP::OpenMP_CXX Spectra)
 
